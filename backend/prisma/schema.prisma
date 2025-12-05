@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(STUDENT)
+  course    String?  // Curso (para alunos) ou Área (para servidores)
+  photoUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ridesOffered Ride[] @relation("DriverRides")
+  
+  requests RideRequest[]
+  
+  notifications Notification[]
+  
+  messages Message[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  STUDENT
+  STAFF
+}
+
+model Ride {
+  id              String       @id @default(uuid())
+  driverId        String
+  driver          User         @relation("DriverRides", fields: [driverId], references: [id], onDelete: Cascade)
+  
+  type            RideType
+  origin          String
+  destination     String
+  meetingPoint    String
+  departureTime   DateTime
+  availableSeats  Int?         // Null para tipo GROUP (ilimitado)
+  description     String?
+  
+  status          RideStatus   @default(ACTIVE)
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  requests        RideRequest[]
+  
+  messages        Message[]
+
+  @@map("rides")
+}
+
+enum RideType {
+  CAR
+  MOTORCYCLE
+  SHARED_UBER
+  GROUP
+}
+
+enum RideStatus {
+  ACTIVE
+  FULL
+  CANCELLED
+  COMPLETED
+}
+
+model RideRequest {
+  id        String        @id @default(uuid())
+  rideId    String
+  ride      Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  status    RequestStatus @default(PENDING)
+  message   String?       // Mensagem opcional do solicitante
+  
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([rideId, userId])
+  @@map("ride_requests")
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      String   // Ex: "RIDE_REQUEST", "REQUEST_ACCEPTED", "NEW_RIDE"
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  rideId    String
+  ride      Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  
+  content   String
+  
+  createdAt DateTime @default(now())
+
+  @@map("messages")
+}
