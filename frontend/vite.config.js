@@ -9,5 +9,10 @@ export default defineConfig({
     watch: {
       usePolling: true
     }
+  },
+  preview: {
+    allowedHosts: [
+      "proactive-comfort-production-ec4f.up.railway.app"
+    ]
   }
 })
