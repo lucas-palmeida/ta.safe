@@ -7,7 +7,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*'
+  origin: [
+    'http://localhost:3000',
+    'https://tasafe-ifrs.vercel.app',
+    /\.vercel\.app$/
+  ],
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
