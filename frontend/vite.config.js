@@ -12,7 +12,7 @@ export default defineConfig({
   },
   preview: {
     allowedHosts: [
-      "proactive-comfort-production-ec4f.up.railway.app"
+      "tasafe-ifrs.up.railway.app"
     ]
   }
 })
